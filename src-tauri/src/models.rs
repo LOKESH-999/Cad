@@ -3,6 +3,7 @@ use crate::schema::*;
 use diesel::prelude::*;
 use serde::{Deserialize,Serialize};
 use chrono;
+use std::sync::Mutex;
 
 #[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
 #[diesel(table_name = auth)]
@@ -87,6 +88,11 @@ pub struct Customer {
 pub struct EId {
     pub email: String,
     pub cust_id: i32,
+}
+
+// #[derive(De)]
+pub struct  Db{
+    pub conn:Mutex<PgConnection>
 }
 
 #[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]

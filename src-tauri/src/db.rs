@@ -1,5 +1,5 @@
 use crate::{models::*, schema::batch};
-use crate::schema::{auth, batch_list, customers, e_ids, order_list, orders};
+use crate::schema::{auth, batch_list, customers, e_ids, order_list, orders, user_watchdog};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
@@ -19,6 +19,13 @@ pub fn auth(conn:&mut PgConnection,username:String,passwd:String)->Result<Auth,E
     .filter(auth::dsl::passwd.eq(passwd))
     .limit(1)
     .get_result::<Auth>(conn)
+}
+
+pub fn add_customer(conn:&mut PgConnection,val:Customer)->Result<Customer,Error>{
+    diesel::insert_into(customers::table)
+    .values(val)
+    .returning(Customer::as_returning())
+    .get_result(conn)
 }
 
 pub fn add_batch(conn:&mut PgConnection,order_id:i64,total:f64,d_date:NaiveDate)->Result<Batch,Error>{
@@ -126,4 +133,15 @@ pub fn orders_by_date(conn:&mut PgConnection,date:NaiveDate)->Result<Vec<Order>,
 
 pub fn get_email_by_id(conn:&mut PgConnection,cust_id:i32)->Result<Vec<String>,Error>{
     e_ids::table.filter(e_ids::cust_id.eq(cust_id)).select(e_ids::email).get_results::<String>(conn)
+}
+
+pub fn user_log(conn:&mut PgConnection,username:String,desc:String)->Result<usize,Error>{
+    diesel::insert_into(user_watchdog::table)
+    .values(UserWatchdog{
+            id:None,
+            username:username,
+            date_time:Utc::now().naive_utc().into(),
+            descs:desc    
+    })
+    .execute(conn)
 }

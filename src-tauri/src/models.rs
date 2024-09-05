@@ -36,7 +36,7 @@ pub struct BatchList {
     pub msg: String,
     pub term: chrono::NaiveDate,
 }
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug,Serialize,Deserialize)] 
 pub struct BList {
     pub oil: String,
     pub brand: String,
@@ -82,6 +82,21 @@ pub struct Customer {
     pub phone:i64,
     pub date: chrono::NaiveDateTime,
 }
+
+#[derive(Debug,Serialize,Deserialize)]
+pub struct CIn {
+    pub name: String,
+    pub hst: String,
+    pub address: String,
+    pub primary_email: String,
+    pub phone:i64
+}
+impl CIn{
+    pub fn into_c(self,date:chrono::NaiveDateTime)->Customer{
+        Customer { cust_id: None, name: self.name, hst: self.hst, address: self.address, primary_email: self.primary_email, phone: self.phone, date: date }
+    }
+}
+
 
 #[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
 #[diesel(table_name = e_ids)]

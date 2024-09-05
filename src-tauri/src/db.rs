@@ -28,14 +28,9 @@ pub fn add_customer(conn:&mut PgConnection,val:Customer)->Result<Customer,Error>
     .get_result(conn)
 }
 
-pub fn add_batch(conn:&mut PgConnection,order_id:i64,total:f64,d_date:NaiveDate)->Result<Batch,Error>{
+pub fn add_batch(conn:&mut PgConnection,val:Batch)->Result<Batch,Error>{
     diesel::insert_into(batch::table)
-    .values(Batch{
-        id:None,
-        order_id:order_id,
-        total:total,
-        d_date:d_date
-    }).returning(Batch::as_returning())
+    .values(val).returning(Batch::as_returning())
     .get_result(conn)
 }
 

@@ -11,7 +11,7 @@ pub struct Auth {
     pub passwd: String,
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize,Clone)]
 #[diesel(table_name = batch)]
 pub struct Batch {
     pub id: Option<i64>,
@@ -180,6 +180,15 @@ pub struct Order {
     pub status: i16,
 }
 
+// impl OrderList{
+//     pub fn into_batch_list(self)->BatchList{
+//         BatchList{
+//             id:None,
+
+//         }
+//     }
+// }
+
 #[derive(Debug,Serialize,Deserialize)]
 pub struct OIn{
     pub cust_id:i32,
@@ -188,10 +197,10 @@ pub struct OIn{
     pub pending_amount: f64,
     pub due_date: chrono::NaiveDate,
     pub order_list:Vec<OList>,
-    pub batch_data:Option<BIn>,
+    pub batch_data:Option<Vec<BIn>>,
 }
 impl OIn{
-    pub fn split(self)->(Order,Vec<OList>,Option<BIn>){
+    pub fn split(self)->(Order,Vec<OList>,Option<Vec<BIn>>){
         let delta=self.amount-self.pending_amount;
         let status=if delta > 0.0{1}else{0};
         (

@@ -1,4 +1,6 @@
 use crate::db::*;
+use diesel::dsl::Or;
+use diesel::Connection;
 // use diesel::pg::PgConnection;
 use tauri::State;
 use tauri::Runtime; 
@@ -91,6 +93,44 @@ pub fn get_order_lists_by_id<R: Runtime>(id:i64,conn:State<'_,Db>,app: tauri::Ap
 #[allow(unused)]
 #[tauri::command]
 pub fn place_order<R: Runtime>(data:OIn,conn:State<'_,Db>,app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<Order, String> {
+    let conn=&mut *conn.conn.lock().unwrap();
     let (orders,order_list,batch)=data.split();
-    todo!()
+    if (orders.m_batches==true && batch.is_none()) || (orders.m_batches==false && batch.is_some()){
+        return Err("incorrect input fiels m_batches, and batches ".to_string());
+    }
+    match conn.transaction::<Order,Error,_>(|conn|{
+        
+        let order_result= match add_orders(conn, orders){
+            Ok(x)=>x,
+            Err(x)=>{return Err(x);}
+        };
+        let orderlist_result=match add_order_list(conn, order_result.order_id.unwrap(), order_list){
+            Ok(x)=>x,
+            Err(x)=>return Err(x)
+        };
+        if batch.is_some(){
+            for i in batch.unwrap(){
+                let (b,bl)=i.split(order_result.order_id.unwrap());
+                let b_ret=match add_batch(conn, b.clone()) {
+                    Ok(x)=>x,
+                    Err(x)=>return Err(x)
+                };
+                match add_batch_list(conn, bl, b.order_id, b.id.unwrap()) {
+                    Ok(x)=>x,
+                    Err(x)=>return Err(x)
+                };
+            }
+        }    
+        Ok(order_result) 
+    }){
+        Ok(x)=>Ok(x),
+        Err(x)=>Err(x.to_string()) 
+    }
+}
+
+#[allow(unused)]
+#[tauri::command]
+pub fn update_payment<R: Runtime>(app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<(), String> {
+    todo!();
+  Ok(())
 }

@@ -87,3 +87,10 @@ pub fn get_order_lists_by_id<R: Runtime>(id:i64,conn:State<'_,Db>,app: tauri::Ap
         Err(x)=>Err(x.to_string())
     }
 }
+
+#[allow(unused)]
+#[tauri::command]
+pub fn place_order<R: Runtime>(data:OIn,conn:State<'_,Db>,app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<Order, String> {
+    let (orders,order_list,batch)=data.split();
+    todo!()
+}

@@ -1,8 +1,7 @@
-// @generated automatically by Diesel CLI.
 use crate::schema::*;
 use diesel::prelude::*;
 use serde::{Deserialize,Serialize};
-use chrono;
+use chrono::{self, Utc};
 use std::sync::Mutex;
 
 #[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
@@ -21,6 +20,20 @@ pub struct Batch {
     pub d_date: chrono::NaiveDate,
 }
 
+#[derive(Serialize,Deserialize,Debug)]
+pub struct BIn{
+    pub total:f64,
+    pub d_date:chrono::NaiveDate,
+    pub batch_list:Vec<BList>
+}
+impl BIn{
+    pub fn split(self,order_id:i64)->(Batch,Vec<BList>){
+        (
+            Batch { id: None, order_id: order_id, total: self.total, d_date: self.d_date },
+            self.batch_list
+        )
+    }
+}
 #[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
 #[diesel(table_name = batch_list)]
 pub struct BatchList {
@@ -165,6 +178,38 @@ pub struct Order {
     pub order_date: chrono::NaiveDateTime,
     pub due_date: chrono::NaiveDate,
     pub status: i16,
+}
+
+#[derive(Debug,Serialize,Deserialize)]
+pub struct OIn{
+    pub cust_id:i32,
+    pub m_batches: bool,
+    pub amount: f64,
+    pub pending_amount: f64,
+    pub due_date: chrono::NaiveDate,
+    pub order_list:Vec<OList>,
+    pub batch_data:Option<BIn>,
+}
+impl OIn{
+    pub fn split(self)->(Order,Vec<OList>,Option<BIn>){
+        let delta=self.amount-self.pending_amount;
+        let status=if delta > 0.0{1}else{0};
+        (
+            Order{
+                order_id:None,
+                cust_id:self.cust_id,
+                m_batches:self.m_batches,
+                amount:self.amount,
+                pending_amount:self.pending_amount,
+                order_date:Utc::now().naive_utc().into(),
+                due_date:self.due_date,
+                status:status
+            },
+            self.order_list,
+            self.batch_data
+        )
+
+    }
 }
 
 #[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]

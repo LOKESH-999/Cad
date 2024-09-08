@@ -148,7 +148,7 @@ pub fn place_order<R: Runtime>(data:OIn,conn:State<'_,Db>,mut br:State<'_,Br>,mu
                     Ok(x)=>x,
                     Err(x)=>return Err(x)
                 };
-                match add_batch_list(conn, bl, b.order_id, b.id.unwrap()) {
+                match add_batch_list(conn, bl, b.order_id, b_ret.id.unwrap()) {
                     Ok(x)=>x,
                     Err(x)=>return Err(x)
                 };
@@ -168,3 +168,40 @@ pub fn update_payment<R: Runtime>(app: tauri::AppHandle<R>, window: tauri::Windo
   Ok(())
 }
 
+pub fn pp(data:OIn,conn:Db,br:Br,des:Desc) -> Result<Order, String> {
+    let conn=&mut *conn.conn.lock().unwrap();
+    let (orders,order_list,batch)=data.split();
+    if (orders.m_batches==true && batch.is_none()) || (orders.m_batches==false && batch.is_some()){
+        return Err("incorrect input fiels m_batches, and batches ".to_string());
+    }
+    br.d.lock().unwrap().add(order_list[0].brand.clone());
+    des.d.lock().unwrap().add(order_list[0].oil.clone());
+    match conn.transaction::<Order,Error,_>(|conn|{
+        
+        let order_result= match add_orders(conn, orders){
+            Ok(x)=>x,
+            Err(x)=>{return Err(x);}
+        };
+        let orderlist_result=match add_order_list(conn, order_result.order_id.unwrap(), order_list){
+            Ok(x)=>x,
+            Err(x)=>return Err(x)
+        };
+        if batch.is_some(){
+            for i in batch.unwrap(){
+                let (b,bl)=i.split(order_result.order_id.unwrap());
+                let b_ret=match add_batch(conn, b.clone()) {
+                    Ok(x)=>x,
+                    Err(x)=>return Err(x)
+                };
+                match add_batch_list(conn, bl, b.order_id, b_ret.id.unwrap()) {
+                    Ok(x)=>x,
+                    Err(x)=>return Err(x)
+                };
+            }
+        }    
+        Ok(order_result) 
+    }){
+        Ok(x)=>Ok(x),
+        Err(x)=>Err(x.to_string()) 
+    }
+}

@@ -1,4 +1,6 @@
 use crate::db::*;
+use crate::freq::Br;
+use crate::freq::Desc;
 use diesel::dsl::Or;
 use diesel::Connection;
 // use diesel::pg::PgConnection;
@@ -29,12 +31,21 @@ pub fn create_customer<R: Runtime>(data:CIn,conn:State<'_,Db>,_app: tauri::AppHa
         Ok(x)=>Ok(x),
         Err(x)=>Err(x.to_string())
     }
-//   Ok(())
 }
 
 #[allow(unused)]
 #[tauri::command]
-pub fn update_customer<R: Runtime>(_app: tauri::AppHandle<R>, _window: tauri::Window<R>) -> Result<(), String> {
+pub fn append_packages<R: Runtime>(data:Package,conn:State<'_,Db>,_app: tauri::AppHandle<R>, _window: tauri::Window<R>) -> Result<Package, String> {
+    let conn=&mut *conn.conn.lock().unwrap();
+    match add_packages(conn, data){
+        Ok(x)=>Ok(x),
+        Err(x)=>Err(x.to_string())
+    }
+}
+
+#[allow(unused)]
+#[tauri::command]
+pub fn update_customer<R: Runtime>(conn:State<'_,Db>,_app: tauri::AppHandle<R>, _window: tauri::Window<R>) -> Result<(), String> {
   todo!()
 }
 
@@ -92,12 +103,34 @@ pub fn get_order_lists_by_id<R: Runtime>(id:i64,conn:State<'_,Db>,app: tauri::Ap
 
 #[allow(unused)]
 #[tauri::command]
-pub fn place_order<R: Runtime>(data:OIn,conn:State<'_,Db>,app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<Order, String> {
+pub fn get_package<R: Runtime>(conn:State<'_,Db>,app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<Vec<Package>, String> {
+    let conn=&mut *conn.conn.lock().unwrap();
+    match get_packages(conn) {
+        Ok(x)=>Ok(x),
+        Err(x)=>Err(x.to_string())
+    }
+
+}
+
+#[allow(unused)]
+#[tauri::command]
+pub fn get_desc_br<R: Runtime>(br:State<'_,Br>,des:State<'_,Desc>,app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<(Vec<String>,Vec<String>), String> {
+    Ok((
+        br.d.lock().unwrap().get(),
+        des.d.lock().unwrap().get()
+    ))
+}
+
+#[allow(unused)]
+#[tauri::command]
+pub fn place_order<R: Runtime>(data:OIn,conn:State<'_,Db>,mut br:State<'_,Br>,mut des:State<'_,Desc>,app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<Order, String> {
     let conn=&mut *conn.conn.lock().unwrap();
     let (orders,order_list,batch)=data.split();
     if (orders.m_batches==true && batch.is_none()) || (orders.m_batches==false && batch.is_some()){
         return Err("incorrect input fiels m_batches, and batches ".to_string());
     }
+    br.d.lock().unwrap().add(order_list[0].brand.clone());
+    des.d.lock().unwrap().add(order_list[0].oil.clone());
     match conn.transaction::<Order,Error,_>(|conn|{
         
         let order_result= match add_orders(conn, orders){
@@ -134,3 +167,4 @@ pub fn update_payment<R: Runtime>(app: tauri::AppHandle<R>, window: tauri::Windo
     todo!();
   Ok(())
 }
+

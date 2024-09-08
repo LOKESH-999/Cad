@@ -1,5 +1,5 @@
 use crate::{models::*, schema::batch};
-use crate::schema::{auth, batch_list, customers, e_ids, order_list, orders, user_watchdog};
+use crate::schema::{auth, batch_list, customers, e_ids, order_list, orders, packages, user_watchdog};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
@@ -49,6 +49,13 @@ pub fn add_orders(conn:&mut PgConnection,val:Order)->Result<Order,Error>{
     // todo!()
 }
  
+pub fn add_packages(conn:&mut PgConnection,val:Package)->Result<Package,Error>{
+    diesel::insert_into(packages::table)
+    .values(val)
+    .returning(Package::as_returning())
+    .get_result(conn)
+}
+
 pub fn add_order_list(conn:&mut PgConnection,order_id:i64,val:Vec<OList>)->Result<Vec<OrderList>,Error>{
      diesel::insert_into(order_list::table)
      .values(val.into_iter().map(|x| x.into_order_list(order_id)).collect::<Vec<OrderList>>())
@@ -117,6 +124,10 @@ pub fn get_order_by_id(conn:&mut PgConnection,id:Option<i64>,cust_id:Option<i32>
     }
 }
 
+pub fn get_packages(conn:&mut PgConnection)->Result<Vec<Package>,Error>{
+    packages::table.load::<Package>(conn)
+}
+
 pub fn get_order_list_by_id(conn:&mut PgConnection,id:i64)->Result<Vec<OrderList>,Error>{
     order_list::table.filter(order_list::order_id.eq(id)).load::<OrderList>(conn)
     // todo!()
@@ -130,6 +141,7 @@ pub fn get_email_by_id(conn:&mut PgConnection,cust_id:i32)->Result<Vec<String>,E
     e_ids::table.filter(e_ids::cust_id.eq(cust_id)).select(e_ids::email).get_results::<String>(conn)
 }
 
+
 pub fn user_log(conn:&mut PgConnection,username:String,desc:String)->Result<usize,Error>{
     diesel::insert_into(user_watchdog::table)
     .values(UserWatchdog{
@@ -140,3 +152,4 @@ pub fn user_log(conn:&mut PgConnection,username:String,desc:String)->Result<usiz
     })
     .execute(conn)
 }
+

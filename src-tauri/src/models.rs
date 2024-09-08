@@ -3,15 +3,18 @@ use diesel::prelude::*;
 use serde::{Deserialize,Serialize};
 use chrono::{self, Utc};
 use std::sync::Mutex;
+use diesel::pg::Pg;
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,QueryableByName,Debug,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = auth)]
 pub struct Auth {
     pub username: String,
     pub passwd: String,
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize,Clone)]
+#[derive(Queryable,Selectable,Insertable,QueryableByName,Debug,Serialize,Deserialize,Clone)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = batch)]
 pub struct Batch {
     pub id: Option<i64>,
@@ -34,7 +37,8 @@ impl BIn{
         )
     }
 }
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,QueryableByName,Debug,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = batch_list)]
 pub struct BatchList {
     pub id: Option<i64>,
@@ -78,13 +82,15 @@ impl BList{
     }
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,Debug,QueryableByName,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = brands)]
 pub struct Brand {
     pub brand: String,
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,QueryableByName,Debug,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = customers)]
 pub struct Customer {
     pub cust_id: Option<i32>,
@@ -111,7 +117,8 @@ impl CIn{
 }
 
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,Debug,QueryableByName,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = e_ids)]
 pub struct EId {
     pub email: String,
@@ -123,7 +130,8 @@ pub struct  Db{
     pub conn:Mutex<PgConnection>
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,Debug,QueryableByName,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = order_list)]
 pub struct OrderList {
     pub id: Option<i64>,
@@ -167,7 +175,8 @@ impl OList{
     }
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,Debug,QueryableByName,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = orders)]
 pub struct Order {
     pub order_id: Option<i64>,
@@ -221,7 +230,8 @@ impl OIn{
     }
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,Debug,QueryableByName,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = packages)]
 pub struct Package {
     pub descs: String,
@@ -229,7 +239,8 @@ pub struct Package {
     pub price: f32,
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,Debug,QueryableByName,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = payments)]
 pub struct Payment {
     pub id: Option<i64>,
@@ -240,7 +251,8 @@ pub struct Payment {
     pub status: i16,
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,Debug,QueryableByName,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = shipping_details)]
 pub struct ShippingDetail {
     pub ship_id: Option<i64>,
@@ -253,7 +265,8 @@ pub struct ShippingDetail {
     pub batch_id: i64,
 }
 
-#[derive(Queryable,Selectable,Insertable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Insertable,Debug,QueryableByName,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
 #[diesel(table_name = user_watchdog)]
 pub struct UserWatchdog {
     pub id: Option<i64>,

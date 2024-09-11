@@ -123,9 +123,9 @@ pub fn get_desc_br<R: Runtime>(br:State<'_,Br>,des:State<'_,Desc>,app: tauri::Ap
 
 #[allow(unused)]
 #[tauri::command]
-pub fn place_order<R: Runtime>(data:OIn,conn:State<'_,Db>,mut br:State<'_,Br>,mut des:State<'_,Desc>,app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<Order, String> {
+pub fn place_order<R: Runtime>(due_date:i64,data:OIn,conn:State<'_,Db>,mut br:State<'_,Br>,mut des:State<'_,Desc>,app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<Order, String> {
     let conn=&mut *conn.conn.lock().unwrap();
-    let (orders,order_list,batch)=data.split();
+    let (orders,order_list,batch)=data.split(21);
     if (orders.m_batches==true && batch.is_none()) || (orders.m_batches==false && batch.is_some()){
         return Err("incorrect input fiels m_batches, and batches ".to_string());
     }
@@ -170,7 +170,7 @@ pub fn update_payment<R: Runtime>(app: tauri::AppHandle<R>, window: tauri::Windo
 
 pub fn pp(data:OIn,conn:Db,br:Br,des:Desc) -> Result<Order, String> {
     let conn=&mut *conn.conn.lock().unwrap();
-    let (orders,order_list,batch)=data.split();
+    let (orders,order_list,batch)=data.split(21);
     if (orders.m_batches==true && batch.is_none()) || (orders.m_batches==false && batch.is_some()){
         return Err("incorrect input fiels m_batches, and batches ".to_string());
     }

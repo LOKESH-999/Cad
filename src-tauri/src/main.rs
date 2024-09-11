@@ -12,7 +12,7 @@ mod freq;
 use std::sync::Mutex;
 use routs::*;
 use models::{OIn, OList, BIn, BList};
-use chrono::NaiveDate;
+use chrono::{NaiveDate,Duration};
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -21,6 +21,7 @@ fn greet(name: &str) -> String {
 
 fn main() {
         // Create a sample OIn instance with test data
+        let x=Duration::days(21);
         let order_list = vec![
             OList {
                 oil: "Olive Oil".to_string(),
@@ -68,7 +69,6 @@ fn main() {
             m_batches: true,
             amount: 400.0,
             pending_amount: 100.0,
-            due_date: NaiveDate::from_ymd(2024, 12, 31),
             order_list,
             batch_data,
         };
@@ -81,7 +81,7 @@ fn main() {
     // pp(order_input, conn, br, des);
     // pp(order_input, conn, br, des);
     
-    
+    // println!("{:?}",br.d.l);
     let conn=Db{conn:Mutex::new(establish_conn())};
     let br=Br{d:Mutex::new(MFreq::new(5))};
     let des=Desc{d:Mutex::new(MFreq::new(5))};

@@ -1,7 +1,7 @@
 use crate::schema::*;
 use diesel::prelude::*;
 use serde::{Deserialize,Serialize};
-use chrono::{self, Utc};
+use chrono::{self, Duration,Utc};
 use std::sync::Mutex;
 use diesel::pg::Pg;
 
@@ -204,14 +204,14 @@ pub struct OIn{
     pub m_batches: bool,
     pub amount: f64,
     pub pending_amount: f64,
-    pub due_date: chrono::NaiveDate,
     pub order_list:Vec<OList>,
     pub batch_data:Option<Vec<BIn>>,
 }
 impl OIn{
-    pub fn split(self)->(Order,Vec<OList>,Option<Vec<BIn>>){
+    pub fn split(self,due_date:i64)->(Order,Vec<OList>,Option<Vec<BIn>>){
         let delta=self.amount-self.pending_amount;
         let status=if delta > 0.0{1}else{0};
+        let date=Utc::now().naive_utc().into();
         (
             Order{
                 order_id:None,
@@ -219,8 +219,8 @@ impl OIn{
                 m_batches:self.m_batches,
                 amount:self.amount,
                 pending_amount:self.pending_amount,
-                order_date:Utc::now().naive_utc().into(),
-                due_date:self.due_date,
+                order_date:date,
+                due_date:(date+Duration::days(due_date)).into(),
                 status:status
             },
             self.order_list,

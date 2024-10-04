@@ -3,10 +3,14 @@ CREATE TABLE orders (
     cust_id INTEGER NOT NULL,
     m_batches BOOLEAN NOT NULL,
     amount DOUBLE PRECISION NOT NULL CHECK (amount > 0),
-    pending_amount DOUBLE PRECISION NOT NULL CHECK (pending_amount > 0),
+    pending_amount DOUBLE PRECISION NOT NULL,
     order_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    due_date DATE NOT NULL,
-    status SMALLINT NOT NULL CHECK (status > 0)
+    status SMALLINT NOT NULL CHECK (status > 0),
+    msg VARCHAR(255) NOT NULL,
+    n_weight INTEGER NOT NULL CHECK (n_weight > 0),
+    cases INTEGER NOT NULL CHECK (cases > 0),
+    bottles INTEGER NOT NULL CHECK (bottles > 0),
+    term DATE NOT NULL
 );
 CREATE TABLE order_list (
     id BIGSERIAL PRIMARY KEY,
@@ -16,15 +20,15 @@ CREATE TABLE order_list (
     cases INTEGER NOT NULL CHECK (cases > 0),
     bottles INTEGER NOT NULL CHECK (bottles > 0),
     cost DOUBLE PRECISION NOT NULL CHECK (cost > 0),
-    n_weights INTEGER NOT NULL CHECK (n_weights > 0),
-    msg VARCHAR(255) NOT NULL,
-    term DATE NOT NULL
+    n_weights INTEGER NOT NULL CHECK (n_weights > 0)
 );
 CREATE TABLE batch (
     id BIGSERIAL PRIMARY KEY,
     order_id BIGINT NOT NULL,
     total DOUBLE PRECISION NOT NULL CHECK (total > 0),
-    d_date DATE NOT NULL
+    d_date DATE NOT NULL,
+    msg VARCHAR(255) NOT NULL,
+    term DATE NOT NULL
 );
 CREATE TABLE batch_list (
     id BIGSERIAL PRIMARY KEY,
@@ -35,9 +39,7 @@ CREATE TABLE batch_list (
     n_weight INTEGER NOT NULL CHECK (n_weight > 0),
     cases INTEGER NOT NULL CHECK (cases > 0),
     bottles INTEGER NOT NULL CHECK (bottles > 0),
-    cost DOUBLE PRECISION NOT NULL CHECK (cost > 0),
-    msg VARCHAR(255) NOT NULL,
-    term DATE NOT NULL
+    cost DOUBLE PRECISION NOT NULL CHECK (cost > 0)
 );
 CREATE TABLE shipping_details (
     ship_id BIGSERIAL PRIMARY KEY,

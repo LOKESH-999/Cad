@@ -13,6 +13,13 @@ pub struct Auth {
     pub passwd: String,
 }
 
+#[derive(Queryable,Selectable,Insertable,QueryableByName,Debug,Serialize,Deserialize)]
+#[diesel(check_for_backend(Pg))]
+#[diesel(table_name = brands)]
+pub struct Brands{
+    brand:String
+}
+
 #[derive(Queryable,Selectable,Insertable,QueryableByName,Debug,Serialize,Deserialize,Clone)]
 #[diesel(check_for_backend(Pg))]
 #[diesel(table_name = batch)]
@@ -50,8 +57,6 @@ pub struct BatchList {
     pub cases: i32,
     pub bottles: i32,
     pub cost: f64,
-    pub msg: String,
-    pub term: chrono::NaiveDate,
 }
 #[derive(Debug,Serialize,Deserialize)] 
 pub struct BList {
@@ -61,8 +66,6 @@ pub struct BList {
     pub cases: i32,
     pub bottles: i32,
     pub cost: f64,
-    pub msg: String,
-    pub term: chrono::NaiveDate,
 }
 impl BList{
     pub fn into_batch_list(self,order_id:i64,batch_id:i64)->BatchList{
@@ -76,8 +79,6 @@ impl BList{
             cases:self.cases,
             bottles:self.bottles,
             cost:self.cost,
-            msg:self.msg,
-            term:self.term
         }
     }
 }
@@ -142,8 +143,18 @@ pub struct OrderList {
     pub bottles: i32,
     pub cost: f64,
     pub n_weights: i32,
-    pub msg: String,
-    pub term: chrono::NaiveDate,
+}
+impl OrderList{
+    pub fn into_blist(self)->BList{
+        BList{
+            oil:self.oil,
+            brand:self.brand,
+            n_weight:self.n_weights,
+            cases:self.cases,
+            bottles:self.bottles,
+            cost:self.cost,
+        }
+    }
 }
 
 #[derive(Debug,Serialize,Deserialize)]
@@ -154,8 +165,6 @@ pub struct OList{
     pub bottles: i32,
     pub cost: f64,
     pub n_weights: i32,
-    pub msg: String,
-    pub term: chrono::NaiveDate,
 }
 
 impl OList{
@@ -169,8 +178,6 @@ impl OList{
             cases:self.cases,
             bottles:self.bottles,
             cost:self.cost,
-            msg:self.msg,
-            term:self.term
         }
     }
 }
@@ -185,8 +192,12 @@ pub struct Order {
     pub amount: f64,
     pub pending_amount: f64,
     pub order_date: chrono::NaiveDateTime,
-    pub due_date: chrono::NaiveDate,
     pub status: i16,
+    pub msg: String,
+    pub n_weight: i32,
+    pub cases: i32,
+    pub bottles: i32,
+    pub term: chrono::NaiveDate
 }
 
 // impl OrderList{
@@ -206,6 +217,10 @@ pub struct OIn{
     pub pending_amount: f64,
     pub order_list:Vec<OList>,
     pub batch_data:Option<Vec<BIn>>,
+    pub msg: String,
+    pub n_weights: i32,
+    pub cases: i32,
+    pub bottles: i32,
 }
 impl OIn{
     pub fn split(self,due_date:i64)->(Order,Vec<OList>,Option<Vec<BIn>>){
@@ -220,8 +235,12 @@ impl OIn{
                 amount:self.amount,
                 pending_amount:self.pending_amount,
                 order_date:date,
-                due_date:(date+Duration::days(due_date)).into(),
-                status:status
+                status:status,
+                msg: self.msg,
+                n_weight:self.n_weights,
+                cases:self.cases,
+                bottles:self.bottles,
+                term: (date+Duration::days(due_date)).into(),
             },
             self.order_list,
             self.batch_data
@@ -256,6 +275,17 @@ pub struct Payment {
 #[diesel(table_name = shipping_details)]
 pub struct ShippingDetail {
     pub ship_id: Option<i64>,
+    pub carrier: String,
+    pub tracking_no: String,
+    pub eda: chrono::NaiveDate,
+    pub cost: f32,
+    pub n_weight: i32,
+    pub address: String,
+    pub batch_id: i64,
+}
+
+#[derive(Debug,Serialize,Deserialize)]
+pub struct SIn{
     pub carrier: String,
     pub tracking_no: String,
     pub eda: chrono::NaiveDate,

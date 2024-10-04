@@ -57,4 +57,10 @@ pub struct Br{
     pub d:Mutex<MFreq>
 }
 
+pub struct Case{
+    pub d:Mutex<MFreq>
+}
+pub struct Pallets{
+    pub d:Mutex<MFreq>
+}
 // impl !Copy for MFreq {}

@@ -1,0 +1,27 @@
+@page{
+    size:A4,
+    /* margin: 10px; */
+    
+}
+.body{
+    width: 300mm;
+    height: 410mm;
+    /* border: 1px solid red; */
+    display: flex;
+}
+@media print {
+.body {
+margin: 0;
+padding: 0;
+}
+.page {
+width: 300mm;
+height: 297mm;
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+page-break-after: always;
+padding: 10mm;
+}
+/* */
+}

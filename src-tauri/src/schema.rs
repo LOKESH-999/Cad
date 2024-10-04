@@ -15,6 +15,9 @@ diesel::table! {
         order_id -> Int8,
         total -> Float8,
         d_date -> Date,
+        #[max_length = 255]
+        msg -> Varchar,
+        term -> Date,
     }
 }
 
@@ -31,9 +34,6 @@ diesel::table! {
         cases -> Int4,
         bottles -> Int4,
         cost -> Float8,
-        #[max_length = 255]
-        msg -> Varchar,
-        term -> Date,
     }
 }
 
@@ -80,9 +80,6 @@ diesel::table! {
         bottles -> Int4,
         cost -> Float8,
         n_weights -> Int4,
-        #[max_length = 255]
-        msg -> Varchar,
-        term -> Date,
     }
 }
 
@@ -94,8 +91,13 @@ diesel::table! {
         amount -> Float8,
         pending_amount -> Float8,
         order_date -> Timestamp,
-        due_date -> Date,
         status -> Int2,
+        #[max_length = 255]
+        msg -> Varchar,
+        n_weight -> Int4,
+        cases -> Int4,
+        bottles -> Int4,
+        term -> Date,
     }
 }
 

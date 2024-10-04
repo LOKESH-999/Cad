@@ -1,5 +1,6 @@
+use crate::schema::brands::brand;
 use crate::{models::*, schema::batch};
-use crate::schema::{auth, batch_list, customers, e_ids, order_list, orders, packages, user_watchdog};
+use crate::schema::{auth, batch_list, brands, customers, e_ids, order_list, orders, packages, user_watchdog};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
@@ -63,13 +64,14 @@ pub fn add_order_list(conn:&mut PgConnection,order_id:i64,val:Vec<OList>)->Resul
      .get_results(conn)
 }
 
-pub fn update_orders(conn:&mut PgConnection,order_id:i64,m_batches:bool,total:f64,pending:f64)->Result<Order,Error>{
+pub fn update_orders(conn:&mut PgConnection,order_id:i64,m_batches:bool,total:f64,pending:f64,status:i16)->Result<Order,Error>{
     diesel::update(orders::table)
     .filter(orders::order_id.eq(order_id))
     .set((
         orders::m_batches.eq(m_batches),
         orders::amount.eq(total),
-        orders::pending_amount.eq(pending)
+        orders::pending_amount.eq(pending),
+        orders::status.eq(status)
     )).returning(Order::as_returning())
     .get_result(conn)
     // todo!()
@@ -86,6 +88,7 @@ pub fn update_batch(conn:&mut PgConnection,id:i64,total:f64,d_date:NaiveDate)->R
 }
 
 // pub fn update_batch_list(conn:&mut PgConnection,)
+
 
 pub fn update_customer(id:i32,name:String,hst:String,address:String,phone_no:i64,email:String,conn:&mut PgConnection)->Result<Customer, Error>{
     diesel::update(customers::table)
@@ -124,9 +127,34 @@ pub fn get_order_by_id(conn:&mut PgConnection,id:Option<i64>,cust_id:Option<i32>
     }
 }
 
+pub fn get_brands(conn:&mut PgConnection)->Result<Vec<String>,Error>{
+    brands::table.select(brands::brand).get_results::<String>(conn)
+}
+
+pub fn get_batchid_by_orderid(conn:&mut PgConnection,order_id:i64)->Result<Vec<Option<i64>>,Error>{
+    batch::table.select(batch::id).filter(batch::order_id.eq(order_id)).get_results::<Option<i64>>(conn)
+}
+
+// pub fn get_batchlist_by_id(mut conn:&mut PgConnection,batch_id:i64)->Result<(Batch,Vec<BatchList>),Error>{
+//     Ok((   match batch::table.filter(batch::id.eq(batch_id)).limit(1).get_result::<Batch>(*(&mut conn)) {
+//         Ok(x)=>x,
+//         Err(x)=>return Err(x)
+//     },
+//         match batch_list::table.filter(batch_list::batch_id.eq(batch_id)).load::<BatchList>(conn) {
+//         Ok(x)=>x,
+//         Err(x)=>return Err(x)
+//     }
+//     ))
+// }
+
+pub fn get_batche_by_orderid(conn:&mut PgConnection,order_id:i64)->Result<(Vec<Batch>,Vec<BatchList>),Error>{
+    todo!()
+}
+
 pub fn get_packages(conn:&mut PgConnection)->Result<Vec<Package>,Error>{
     packages::table.load::<Package>(conn)
 }
+
 
 pub fn get_order_list_by_id(conn:&mut PgConnection,id:i64)->Result<Vec<OrderList>,Error>{
     order_list::table.filter(order_list::order_id.eq(id)).load::<OrderList>(conn)
